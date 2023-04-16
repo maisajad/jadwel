@@ -13,6 +13,9 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.2
+  flutter_native_splash: ^2.2.9
+  font_awesome_flutter: ^10.4.0
+
 
 
 
@@ -21,26 +24,20 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^2.0.0
-  flutter_native_splash: ^2.2.9
+
 
 flutter_native_splash:
-  color: "#ffffff"
-  image: assets/images/logo.png
-
+  color: "#F4F4F4"
+  image: assets/images/logo_1200.png
 
 flutter:
-
   uses-material-design: true
-
-  # assets:
-   # - assets/circle_logo.png
-   # - assets/JUST_logo.jpg
-
-
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
+  assets:
+    - assets/images/
+  fonts:
+    - family: NotoSansLao
+      fonts:
+        - asset: assets/fonts/NotoSansLao/NotoSansLao-Regular.ttf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro
