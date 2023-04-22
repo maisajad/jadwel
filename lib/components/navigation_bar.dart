@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:jadwel/screens/login_screen.dart';
 
 class NavBar extends StatelessWidget {
@@ -33,7 +31,7 @@ class NavBar extends StatelessWidget {
                 const Text(
                   'Information',
                   style: TextStyle(
-                      color: const Color(0xFF3C698B),
+                      color: Color(0xFF3C698B),
                       fontWeight: FontWeight.bold,
                       fontSize: 18),
                 ),
@@ -78,7 +76,7 @@ class NavBar extends StatelessWidget {
                 const Text(
                   'Settings',
                   style: TextStyle(
-                      color: const Color(0xFF3C698B),
+                      color: Color(0xFF3C698B),
                       fontWeight: FontWeight.bold,
                       fontSize: 18),
                 ),
@@ -102,7 +100,7 @@ class NavBar extends StatelessWidget {
                   ),
                   title: const Text(
                     'Theme',
-                    style: const TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 16),
                   ),
                   onTap: (() {}),
                 ),
@@ -119,11 +117,11 @@ class NavBar extends StatelessWidget {
             padding: const EdgeInsets.only(left: 15.0),
             child: ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: Icon(
+              leading: const Icon(
                 Icons.logout,
                 size: 30,
               ),
-              title: Text(
+              title: const Text(
                 'Logout',
                 style: TextStyle(fontSize: 16),
               ),
@@ -131,7 +129,7 @@ class NavBar extends StatelessWidget {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => LoginScreen(),
+                    builder: (context) => const LoginScreen(),
                   ),
                 );
               },

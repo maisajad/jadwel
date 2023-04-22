@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CustomCard extends StatelessWidget {
@@ -29,7 +28,7 @@ class CustomCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       elevation: 3,
       child: InkWell(
-        splashColor: Color.fromARGB(255, 195, 218, 236),
+        splashColor: const Color.fromARGB(255, 195, 218, 236),
         onTap: onTap,
         child: SizedBox(
           height: height,
@@ -38,7 +37,7 @@ class CustomCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                color: Color(0xFF3C698B),
+                color: const Color(0xFF3C698B),
                 height: height / 13,
                 width: width,
               ),

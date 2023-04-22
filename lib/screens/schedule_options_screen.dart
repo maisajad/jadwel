@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
-
 import '../components/custom_card.dart';
 
 class ScheduleOptionsScreen extends StatelessWidget {
@@ -46,7 +43,9 @@ class ScheduleOptionsScreen extends StatelessWidget {
                 Icons.playlist_add,
                 size: 50,
               ),
-              onTap: () {},
+              onTap: () {
+                Navigator.pushNamed(context, '/selectdays');
+              },
             ),
             CustomCard(
               width: MediaQuery.of(context).size.width * 0.45,
@@ -63,7 +62,7 @@ class ScheduleOptionsScreen extends StatelessWidget {
                 Icons.grid_on,
                 size: 50,
               ),
-              onTap: () {},
+              onTap: () {}, //TODO
             ),
           ],
         ),

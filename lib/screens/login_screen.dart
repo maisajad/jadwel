@@ -1,9 +1,4 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -51,11 +46,11 @@ class _LoginScreenState extends State<LoginScreen> {
               height: MediaQuery.of(context).size.height * 0.39,
               width: MediaQuery.of(context).size.width * 0.75,
               decoration: BoxDecoration(
-                color: Color(0xFFFEFEFE),
+                color: const Color(0xFFFEFEFE),
                 borderRadius: BorderRadius.circular(10),
                 boxShadow: [
                   BoxShadow(
-                    offset: Offset(0, 6),
+                    offset: const Offset(0, 6),
                     spreadRadius: 5,
                     blurRadius: 5,
                     color: Colors.grey.withOpacity(0.5),
@@ -121,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         enableSuggestions: false,
                         decoration: InputDecoration(
                           labelText: 'Password',
-                          border: OutlineInputBorder(
+                          border: const OutlineInputBorder(
                             borderSide: BorderSide(
                               color: Color(0xFF323232),
                             ),
@@ -134,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ? Icons.visibility
                                 : Icons.visibility_off),
                           ),
-                          prefixIcon: Icon(
+                          prefixIcon: const Icon(
                             Icons.key_outlined,
                           ),
                         ),
@@ -167,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     onPressed: () {
                                       Navigator.pop(context);
                                     },
-                                    child: Text('Close'),
+                                    child: const Text('Close'),
                                   ),
                                 ],
                               ),
@@ -177,7 +172,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: ElevatedButton.styleFrom(
                           primary: const Color(0xFF244863),
                         ),
-                        child: Text(
+                        child: const Text(
                           'Login',
                           style: TextStyle(fontSize: 18),
                         ),

@@ -4,6 +4,11 @@ import 'package:jadwel/screens/login_screen.dart';
 import 'package:jadwel/screens/main_screen.dart';
 import 'package:jadwel/screens/notifications_screen.dart';
 import 'package:jadwel/screens/schedule_options_screen.dart';
+import 'package:jadwel/screens/select_courses_screen.dart';
+import 'package:jadwel/screens/select_department_screen.dart';
+import 'package:jadwel/screens/select_days_screen.dart';
+import 'package:jadwel/screens/suggest_course_screen.dart';
+import 'package:jadwel/screens/suggested_schedule_screen.dart';
 
 void main() {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +26,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Jadwel Student App',
       theme: ThemeData(
+        unselectedWidgetColor: const Color(0xFF3C698B),
         primaryColor: const Color(0xFF3C698B),
         hoverColor: const Color(0xFF244863),
         focusColor: const Color(0xFF244863),
@@ -30,6 +36,11 @@ class MyApp extends StatelessWidget {
           color: Color(0xFF323232),
           fontFamily: 'NotoSansLao',
         )),
+        radioTheme: RadioThemeData(
+          fillColor: MaterialStateColor.resolveWith(
+            (states) => const Color(0xFF244863),
+          ),
+        ),
         colorScheme: ColorScheme.fromSwatch()
             .copyWith(secondary: const Color(0xFF3C698B)),
       ),
@@ -39,6 +50,11 @@ class MyApp extends StatelessWidget {
         '/mainscreen': (context) => const MainScreen(),
         '/notifications': (context) => const NotificationsScreen(),
         '/scheduleoptions': (context) => const ScheduleOptionsScreen(),
+        '/selectdays': (context) => const SelectDaysScreen(),
+        '/selectdepartment': (context) => const SelectDepartmentScreen(),
+        '/selectcourses': (context) => const SelectCoursesScreen(),
+        '/suggestcourse': (context) => const SuggestCourseScreen(),
+        '/suggestedschedule': (context) => const SuggestedScheduleScreen(),
       },
     );
   }
