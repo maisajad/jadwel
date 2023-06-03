@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../components/custom_card.dart';
+import 'package:jadwel/globals.dart' as globals;
 
 class ScheduleOptionsScreen extends StatelessWidget {
   const ScheduleOptionsScreen({Key? key}) : super(key: key);
@@ -43,9 +44,26 @@ class ScheduleOptionsScreen extends StatelessWidget {
                 Icons.playlist_add,
                 size: 50,
               ),
-              onTap: () {
-                Navigator.pushNamed(context, '/selectdays');
-              },
+              onTap: (() {
+                if (globals.isSuggested) {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) => SimpleDialog(
+                            title: const Text(
+                                'To view and edit suggested schedule, click on: View Suggested Schedule'),
+                            children: [
+                              SimpleDialogOption(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                child: const Text('Close'),
+                              ),
+                            ],
+                          ));
+                } else {
+                  Navigator.pushNamed(context, '/selectdays');
+                }
+              }),
             ),
             CustomCard(
               width: MediaQuery.of(context).size.width * 0.45,
@@ -62,7 +80,12 @@ class ScheduleOptionsScreen extends StatelessWidget {
                 Icons.grid_on,
                 size: 50,
               ),
-              onTap: () {}, //TODO
+              onTap: () {
+                Navigator.pushNamed(context, '/suggestedschedule', arguments: {
+                  'days': globals.selectedDays,
+                  'courses': globals.selectedCourses
+                });
+              },
             ),
           ],
         ),

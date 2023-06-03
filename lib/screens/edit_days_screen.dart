@@ -1,21 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:jadwel/globals.dart' as globals;
 
-class SelectDaysScreen extends StatefulWidget {
-  const SelectDaysScreen({Key? key}) : super(key: key);
+class EditDaysScreen extends StatefulWidget {
+  const EditDaysScreen({Key? key}) : super(key: key);
 
   @override
-  State<SelectDaysScreen> createState() => _SelectDaysScreenState();
+  State<EditDaysScreen> createState() => _EditDaysScreenState();
 }
 
-class _SelectDaysScreenState extends State<SelectDaysScreen> {
+class _EditDaysScreenState extends State<EditDaysScreen> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
+    final args = ModalRoute.of(context)!.settings.arguments as Map;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF3C698B),
         title: const Text(
-          'Suggest New Schedule',
+          'Edit days',
           style: TextStyle(fontSize: 25),
         ),
         centerTitle: true,
@@ -33,7 +41,7 @@ class _SelectDaysScreenState extends State<SelectDaysScreen> {
               ),
             ),
           ),
-//              SizedBox(height: MediaQuery.of(context).size.height * 0.05),
+          //  SizedBox(height: MediaQuery.of(context).size.height * 0.05),
           RadioListTile<String>(
             contentPadding: const EdgeInsets.only(left: 10),
             title: const Text(
@@ -45,9 +53,11 @@ class _SelectDaysScreenState extends State<SelectDaysScreen> {
             value: 'Sunday-Tuesday-Thursday',
             groupValue: globals.selectedDays,
             onChanged: (value) {
-              setState(() {
-                globals.selectedDays = value!;
-              });
+              setState(
+                () {
+                  globals.selectedDays = value!;
+                },
+              );
             },
           ),
           RadioListTile<String>(
@@ -61,9 +71,11 @@ class _SelectDaysScreenState extends State<SelectDaysScreen> {
             value: 'Monday-Wednesday',
             groupValue: globals.selectedDays,
             onChanged: (value) {
-              setState(() {
-                globals.selectedDays = value!;
-              });
+              setState(
+                () {
+                  globals.selectedDays = value!;
+                },
+              );
             },
           ),
           RadioListTile<String>(
@@ -82,6 +94,7 @@ class _SelectDaysScreenState extends State<SelectDaysScreen> {
               });
             },
           ),
+
           SizedBox(height: MediaQuery.of(context).size.height * 0.20),
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.08,
@@ -96,7 +109,8 @@ class _SelectDaysScreenState extends State<SelectDaysScreen> {
               ),
               onPressed: globals.selectedDays.isNotEmpty
                   ? () {
-                      Navigator.pushNamed(context, '/selectdepartment',
+                      globals.selectedDays = globals.selectedDays;
+                      Navigator.pushNamed(context, '/suggestedschedule',
                           arguments: {
                             'days': globals.selectedDays,
                             'courses': globals.selectedCourses
@@ -104,7 +118,7 @@ class _SelectDaysScreenState extends State<SelectDaysScreen> {
                     }
                   : null,
               child: const Text(
-                'Next',
+                'Save',
                 style: TextStyle(fontSize: 20),
               ),
             ),

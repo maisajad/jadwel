@@ -1,4 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jaguar_jwt/jaguar_jwt.dart';
+import 'dart:math';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -148,8 +155,38 @@ class _LoginScreenState extends State<LoginScreen> {
                       height: MediaQuery.of(context).size.height * 0.07,
                       width: MediaQuery.of(context).size.width * 0.635,
                       child: ElevatedButton(
-                        onPressed: () {
-                          if (_password == '1234' && _studentID == '123456') {
+                        onPressed: () async {
+                          var url = Uri.parse(
+                              'http://localhost:8080/api/authenticate');
+
+                          var response = await http.post(
+                            url,
+                            headers: <String, String>{
+                              'Content-Type': 'application/json; charset=UTF-8',
+                            },
+                            body: jsonEncode(<String, String>{
+                              'user_id': _studentID,
+                              'password': _password,
+                            }),
+                          );
+
+                          if (response.statusCode == 200) {
+                            SharedPreferences prefs =
+                                await SharedPreferences.getInstance();
+
+                            final String token = response.body;
+                            final String secret =
+                                'DeiaaDeiaaDeiaaDeiaaDeiaaDeiaaDeiaaDeiaa';
+
+                            final decClaimSet =
+                                verifyJwtHS256Signature(token, secret);
+                            print('Decoded JWT: $decClaimSet');
+
+                            await prefs.setString('jwt_token', response.body);
+                            //TODO
+                            await prefs.setString('user_id', _studentID);
+
+                            print(response.body);
                             Navigator.pushNamed(context, '/mainscreen');
                           } else {
                             showDialog(
@@ -181,7 +218,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
           ),
-
           SizedBox(
             height: MediaQuery.of(context).size.height * 0.25,
           ),

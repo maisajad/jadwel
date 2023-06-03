@@ -11,10 +11,16 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  http: ^0.13.3
+  shared_preferences: ^2.0.6
+  jaguar_jwt: ^3.0.0
+  
+
 
   cupertino_icons: ^1.0.2
   flutter_native_splash: ^2.2.9
   font_awesome_flutter: ^10.4.0
+  pull_to_refresh: ^2.0.0
 
 
 

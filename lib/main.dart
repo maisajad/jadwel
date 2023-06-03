@@ -8,7 +8,11 @@ import 'package:jadwel/screens/select_courses_screen.dart';
 import 'package:jadwel/screens/select_department_screen.dart';
 import 'package:jadwel/screens/select_days_screen.dart';
 import 'package:jadwel/screens/suggest_course_screen.dart';
-import 'package:jadwel/screens/suggested_schedule_screen.dart';
+import 'package:jadwel/screens/selected_courses_screen.dart';
+
+import 'screens/edit_days_screen.dart';
+import 'screens/notifcation_screen.dart';
+import 'screens/suggested_schedule_screen.dart';
 
 void main() {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -20,17 +24,17 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Jadwel Student App',
       theme: ThemeData(
+        backgroundColor: const Color(0xFFF4F4F4),
         unselectedWidgetColor: const Color(0xFF3C698B),
         primaryColor: const Color(0xFF3C698B),
         hoverColor: const Color(0xFF244863),
         focusColor: const Color(0xFF244863),
-        scaffoldBackgroundColor: const Color(0xFFFCFCFC),
+        scaffoldBackgroundColor: const Color(0xFFF4F4F4),
         textTheme: const TextTheme(
             bodyText2: TextStyle(
           color: Color(0xFF323232),
@@ -54,7 +58,10 @@ class MyApp extends StatelessWidget {
         '/selectdepartment': (context) => const SelectDepartmentScreen(),
         '/selectcourses': (context) => const SelectCoursesScreen(),
         '/suggestcourse': (context) => const SuggestCourseScreen(),
+        '/selectedcourses': (context) => const SelectedCoursesScreen(),
         '/suggestedschedule': (context) => const SuggestedScheduleScreen(),
+        '/editdays': (context) => const EditDaysScreen(),
+        '/notification': (context) => const NotificationScreen(),
       },
     );
   }

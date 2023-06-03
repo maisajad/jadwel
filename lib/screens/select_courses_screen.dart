@@ -1,7 +1,11 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:jadwel/components/department.dart';
+import '../components/college.dart';
 import '../components/course.dart';
 import '../components/info_container.dart';
+import 'package:jadwel/globals.dart' as globals;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class SelectCoursesScreen extends StatefulWidget {
   const SelectCoursesScreen({
@@ -14,83 +18,39 @@ class SelectCoursesScreen extends StatefulWidget {
 
 class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
   List<Course> _courses = [];
-  List<Course> _selectedCourses = [];
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<void> _setCourses() async {
+    try {
+      final response =
+          await http.get(Uri.parse('http://localhost:8080/api/courses'));
+      if (response.statusCode == 200) {
+        final List<dynamic> coursesData = json.decode(response.body);
+        _courses = coursesData
+            .map((courseData) => Course.fromJson(courseData))
+            .toList();
+      } else {
+        print('Failed to fetch courses. Status code: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Failed to fetch courses: $error');
+    }
+    for (var course in _courses) {
+      if (!globals.selectedCourses.contains(course)) {
+        globals.notSelectedCourses.add(course);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Map;
-    final String selectedDepartment = args['department'];
-    final String selectedCollege = args['college'];
-    final String selectedDays = args['days'];
-
-    void _setCourses() {
-      if (selectedDepartment == 'Computer Engineering') {
-        _courses = [];
-      } else if (selectedDepartment == 'Computer Science') {
-        _courses = [];
-      } else if (selectedDepartment == 'Computer Information Systems') {
-        _courses = [];
-      } else if (selectedDepartment == 'Network Engineering And Security') {
-        _courses = [];
-      } else if (selectedDepartment == 'Software Engineering') {
-        _courses = [
-          Course(
-              name: 'INTRODUCTION TO INFORMATION TECHNOLOGY'.toLowerCase(),
-              courseID: 'SE103'),
-          Course(
-              name:
-                  'INTRODUCTION TO OBJECT- ORIENTED PROGRAMMING'.toLowerCase(),
-              courseID: 'SE112'),
-          Course(name: 'JAVA PROGRAMMING'.toLowerCase(), courseID: 'SE210'),
-          Course(name: 'SOFTWARE MODELLING'.toLowerCase(), courseID: 'SE220'),
-          Course(
-              name: 'FUNDAMENTALS OF SOFTWARE ENGINEERING'.toLowerCase(),
-              courseID: 'SE230'),
-          Course(name: 'VISUAL PROGRAMMING'.toLowerCase(), courseID: 'SE310'),
-          Course(
-              name: 'SYSTEM ANALYSIS AND DESIGN'.toLowerCase(),
-              courseID: 'SE320'),
-          Course(
-              name: 'SOFTWARE REQUIREMENTS ENGINEERING'.toLowerCase(),
-              courseID: 'SE321'),
-          Course(
-            name: 'SOFTWARE DOCUMENTATION'.toLowerCase(),
-            courseID: 'SE323',
-            isAvailable: false,
-          ),
-          Course(
-              name: 'Software Architecture & Design'.toLowerCase(),
-              courseID: 'SE324'),
-          Course(
-              name: 'SOFTWARE ENGINEERING LAB (2)'.toLowerCase(),
-              courseID: 'SE325'),
-          Course(
-              name: 'Client/Server Programming'.toLowerCase(),
-              courseID: 'SE371'),
-          Course(
-              name: 'SELECTED PROGRAMMING LANGUAGES'.toLowerCase(),
-              courseID: 'SE412'),
-          Course(
-              name: 'Formal Methods in Software Engineering'.toLowerCase(),
-              courseID: 'SE420'),
-          Course(name: 'SOFTWARE TESTING'.toLowerCase(), courseID: 'SE430'),
-          Course(name: 'SOFTWARE SECURITY'.toLowerCase(), courseID: 'SE431'),
-          Course(
-              name: 'SOFTWARE ENGINEERING FOR WEB APPLICATIONS'.toLowerCase(),
-              courseID: 'SE432'),
-          Course(name: 'PROJECT MANAGEMENT'.toLowerCase(), courseID: 'SE440'),
-        ];
-      } else if (selectedDepartment == 'Cybersecurity') {
-        _courses = [];
-      } else if (selectedDepartment == 'Data Science') {
-        _courses = [];
-      } else if (selectedDepartment == 'Artifcial Intelligence') {
-        _courses = [];
-      } else {}
-    }
-
-    _setCourses();
-
+    final Department selectedDepartment = args['department'];
+    final College selectedCollege = args['college'];
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF3C698B),
@@ -140,7 +100,27 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.02,
                   ),
-                  ..._courses.map(buildSingleCheckBox).toList(),
+                  FutureBuilder<void>(
+                    future: _setCourses(),
+                    builder:
+                        (BuildContext context, AsyncSnapshot<void> snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Center(
+                          child: Text('Error: ${snapshot.error}'),
+                        );
+                      } else {
+                        return Column(
+                          children: globals.notSelectedCourses
+                              .map(buildSingleCheckBox)
+                              .toList(),
+                        );
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
@@ -158,21 +138,21 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                onPressed: _selectedCourses.isNotEmpty
+                onPressed: globals.selectedCourses.isNotEmpty
                     ? () {
                         Navigator.pushNamed(
                           context,
-                          '/suggestedschedule',
+                          '/selectedcourses',
                           arguments: {
                             'college': selectedCollege,
                             'department': selectedDepartment,
-                            'days': selectedDays,
-                            'courses': _selectedCourses
+                            'days': globals.selectedDays,
+                            'courses': globals.selectedCourses
                           },
                         );
                       }
                     : () {
-                        if (_selectedCourses.isEmpty) {
+                        if (globals.selectedCourses.isEmpty) {
                           showDialog(
                             context: context,
                             builder: (BuildContext context) => SimpleDialog(
@@ -191,12 +171,12 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
                         } else {
                           Navigator.pushNamed(
                             context,
-                            '/suggestedschedule',
+                            '/selectedcourses',
                             arguments: {
                               'college': selectedCollege,
                               'department': selectedDepartment,
-                              'days': selectedDays,
-                              'courses': _selectedCourses
+                              'days': globals.selectedDays,
+                              'courses': globals.selectedCourses
                             },
                           );
                         }
@@ -217,18 +197,25 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
     return StatefulBuilder(
       builder: (context, setState) {
         return CheckboxListTile(
-          secondary: (course.isAvailable)
+          secondary: (course.isActive)
               ? null
               : IconButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/suggestcourse');
+                    Navigator.pushNamed(
+                      context,
+                      '/suggestcourse',
+                      arguments: {
+                        'course': course,
+                      },
+                    ).then((_) => setState(() {}));
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.message_outlined,
-                    color: Color(0xFF244863),
+                    color: (!course.isSuggested)
+                        ? const Color(0xFF244863)
+                        : Colors.grey,
                   ),
                 ),
-          subtitle: Text(course.courseID),
           controlAffinity: ListTileControlAffinity.leading,
           title: Text(
             course.name,
@@ -238,19 +225,16 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
           ),
           activeColor: const Color(0xFF3C698B),
           value: course.value,
-          onChanged: (course.isAvailable)
+          onChanged: (course.isActive)
               ? (value) {
                   setState(() {
                     course.value = value!;
                     if (value == true) {
-                      _selectedCourses.add(course);
+                      globals.selectedCourses.add(course);
                     } else {
-                      _selectedCourses.remove(course);
+                      globals.selectedCourses.remove(course);
                     }
                   });
-                  for (var element in _selectedCourses) {
-                    log(element.name);
-                  }
                 }
               : null,
         );

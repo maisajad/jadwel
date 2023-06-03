@@ -11,12 +11,6 @@ class NavBar extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           UserAccountsDrawerHeader(
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: const Color(0xFF3C698B),
-              child: ClipOval(
-                child: Image.asset('assets/images/avatar_2.png'),
-              ),
-            ),
             accountName: const Text(
               'Maysa Jadalla',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),

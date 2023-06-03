@@ -55,13 +55,14 @@ class InfoContainer extends StatelessWidget {
             ),
           ),
           SizedBox(
-            width: width / 70,
+            width: width / 30, // width / 70
           ),
           Center(
             child: Text(
               title,
               textAlign: TextAlign.justify,
               style: TextStyle(
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
                 color: borderColor,
               ),
