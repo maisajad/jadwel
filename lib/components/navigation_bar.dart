@@ -1,8 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:jadwel/screens/login_screen.dart';
+import 'package:jadwel/fetcher.dart' as fetcher;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NavBar extends StatelessWidget {
   const NavBar({Key? key}) : super(key: key);
+
+  Future<String> getFullName() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? jwtToken = prefs.getString('jwtToken');
+    final String fullName = fetcher.getClaims(jwtToken!)['userName'];
+    return fullName;
+  }
+
+  Future<String> getDepartmentName() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? jwtToken = prefs.getString('jwtToken');
+    final String departmentName =
+        fetcher.getClaims(jwtToken!)['departmentName'];
+    return departmentName;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,11 +28,41 @@ class NavBar extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           UserAccountsDrawerHeader(
-            accountName: const Text(
-              'Maysa Jadalla',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            decoration: const BoxDecoration(
+              color: Color(0xFF3C698B),
             ),
-            accountEmail: const Text('mijadalla19@cit.just.edu.jo'),
+            accountName: FutureBuilder<String>(
+              future: getFullName(),
+              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else {
+                  if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    return Text(
+                      snapshot.data!,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 20),
+                    );
+                  }
+                }
+              },
+            ),
+            accountEmail: FutureBuilder<String>(
+              future: getDepartmentName(),
+              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else {
+                  if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    return Text(snapshot.data!);
+                  }
+                }
+              },
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 15.0),
@@ -81,7 +128,7 @@ class NavBar extends StatelessWidget {
                     size: 30,
                   ),
                   title: const Text(
-                    'Laguage',
+                    'Language',
                     style: TextStyle(fontSize: 16),
                   ),
                   onTap: (() {}),

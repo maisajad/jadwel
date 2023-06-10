@@ -4,10 +4,6 @@ class Course {
   final int creditHours;
   final bool isActive;
   final String departmentName;
-
-  //TODO: Edit
-  bool isSuggested;
-
   bool value;
 
   Course({
@@ -16,7 +12,6 @@ class Course {
     required this.creditHours,
     required this.isActive,
     required this.departmentName,
-    this.isSuggested = false,
     this.value = false,
   });
 

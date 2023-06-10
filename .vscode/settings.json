@@ -1,4 +1,5 @@
 {
     "java.configuration.updateBuildConfiguration": "interactive",
-    "cmake.sourceDirectory": "F:/Desktop/JUST/year4/Second/Graduation Project-2/Student app/jadwel/linux/flutter"
+    "cmake.sourceDirectory": "F:/Desktop/JUST/year4/Second/Graduation Project-2/Student app/jadwel/linux/flutter",
+    "C_Cpp.errorSquiggles": "disabled"
 }

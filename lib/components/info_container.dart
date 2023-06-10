@@ -55,16 +55,20 @@ class InfoContainer extends StatelessWidget {
             ),
           ),
           SizedBox(
-            width: width / 30, // width / 70
+            width: width / 30,
           ),
           Center(
-            child: Text(
-              title,
-              textAlign: TextAlign.justify,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: borderColor,
+            child: SizedBox(
+              width: width * 0.6,
+              child: Text(
+                title,
+                textAlign: TextAlign.left,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: borderColor,
+                ),
+                maxLines: 100,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),

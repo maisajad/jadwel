@@ -1,11 +1,13 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jadwel/components/department.dart';
 import '../components/college.dart';
 import '../components/course.dart';
 import '../components/info_container.dart';
-import 'package:jadwel/globals.dart' as globals;
+import 'package:jadwel/fetcher.dart' as fetcher;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SelectCoursesScreen extends StatefulWidget {
   const SelectCoursesScreen({
@@ -19,29 +21,28 @@ class SelectCoursesScreen extends StatefulWidget {
 class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
   List<Course> _courses = [];
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  Future<void> _setCourses() async {
+  Future<void> _fetchCourses(int departmentId, int userId) async {
     try {
-      final response =
-          await http.get(Uri.parse('http://localhost:8080/api/courses'));
+      final response = await http.get(
+          Uri.parse('http://localhost:8080/api/courses/$userId/$departmentId'));
       if (response.statusCode == 200) {
         final List<dynamic> coursesData = json.decode(response.body);
         _courses = coursesData
             .map((courseData) => Course.fromJson(courseData))
             .toList();
       } else {
-        print('Failed to fetch courses. Status code: ${response.statusCode}');
+        if (kDebugMode) {
+          print('Failed to fetch courses. Status code: ${response.statusCode}');
+        }
       }
     } catch (error) {
-      print('Failed to fetch courses: $error');
+      if (kDebugMode) {
+        print('Failed to fetch courses: $error');
+      }
     }
     for (var course in _courses) {
-      if (!globals.selectedCourses.contains(course)) {
-        globals.notSelectedCourses.add(course);
+      if (!fetcher.selectedCourses.contains(course)) {
+        fetcher.notSelectedCourses.add(course);
       }
     }
   }
@@ -51,6 +52,7 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
     final args = ModalRoute.of(context)!.settings.arguments as Map;
     final Department selectedDepartment = args['department'];
     final College selectedCollege = args['college'];
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF3C698B),
@@ -73,7 +75,7 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
                       backgroundColor: const Color.fromARGB(255, 219, 244, 239),
                       iconData: Icons.priority_high_outlined,
                       title:
-                          'Courses you can\'t select are not\navailable for the next semester.',
+                          'Courses you can\'t select are not available for the next semester.',
                       height: MediaQuery.of(context).size.height * 0.1,
                       width: MediaQuery.of(context).size.width * 0.7,
                     ),
@@ -90,7 +92,7 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
                   ),
                   const Center(
                     child: Text(
-                      '--Available courses for regestiraion--',
+                      '--Available courses for registration--',
                       style: TextStyle(
                         color: Color(0xFF4D575F),
                         fontSize: 20,
@@ -100,10 +102,10 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.02,
                   ),
-                  FutureBuilder<void>(
-                    future: _setCourses(),
+                  FutureBuilder<int>(
+                    future: getUserId(),
                     builder:
-                        (BuildContext context, AsyncSnapshot<void> snapshot) {
+                        (BuildContext context, AsyncSnapshot<int> snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(
                           child: CircularProgressIndicator(),
@@ -113,10 +115,27 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
                           child: Text('Error: ${snapshot.error}'),
                         );
                       } else {
-                        return Column(
-                          children: globals.notSelectedCourses
-                              .map(buildSingleCheckBox)
-                              .toList(),
+                        final userId = snapshot.data!;
+                        return FutureBuilder<void>(
+                          future: _fetchCourses(selectedDepartment.id, userId),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<void> snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            } else if (snapshot.hasError) {
+                              return Center(
+                                child: Text('Error: ${snapshot.error}'),
+                              );
+                            } else {
+                              return Column(
+                                children:
+                                    _courses.map(buildSingleCheckBox).toList(),
+                              );
+                            }
+                          },
                         );
                       }
                     },
@@ -132,13 +151,13 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
               width: MediaQuery.of(context).size.width * 0.30,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: const Color(0xFF3C698B),
+                  backgroundColor: const Color(0xFF3C698B),
                   elevation: 3,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                onPressed: globals.selectedCourses.isNotEmpty
+                onPressed: fetcher.selectedCourses.isNotEmpty
                     ? () {
                         Navigator.pushNamed(
                           context,
@@ -146,13 +165,13 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
                           arguments: {
                             'college': selectedCollege,
                             'department': selectedDepartment,
-                            'days': globals.selectedDays,
-                            'courses': globals.selectedCourses
+                            'days': fetcher.selectedDays,
+                            'courses': fetcher.selectedCourses
                           },
                         );
                       }
                     : () {
-                        if (globals.selectedCourses.isEmpty) {
+                        if (fetcher.selectedCourses.isEmpty) {
                           showDialog(
                             context: context,
                             builder: (BuildContext context) => SimpleDialog(
@@ -175,8 +194,8 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
                             arguments: {
                               'college': selectedCollege,
                               'department': selectedDepartment,
-                              'days': globals.selectedDays,
-                              'courses': globals.selectedCourses
+                              'days': fetcher.selectedDays,
+                              'courses': fetcher.selectedCourses
                             },
                           );
                         }
@@ -197,7 +216,7 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
     return StatefulBuilder(
       builder: (context, setState) {
         return CheckboxListTile(
-          secondary: (course.isActive)
+          secondary: course.isActive
               ? null
               : IconButton(
                   onPressed: () {
@@ -209,11 +228,9 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
                       },
                     ).then((_) => setState(() {}));
                   },
-                  icon: Icon(
+                  icon: const Icon(
                     Icons.message_outlined,
-                    color: (!course.isSuggested)
-                        ? const Color(0xFF244863)
-                        : Colors.grey,
+                    color: Color(0xFF244863),
                   ),
                 ),
           controlAffinity: ListTileControlAffinity.leading,
@@ -225,14 +242,14 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
           ),
           activeColor: const Color(0xFF3C698B),
           value: course.value,
-          onChanged: (course.isActive)
+          onChanged: course.isActive
               ? (value) {
                   setState(() {
                     course.value = value!;
                     if (value == true) {
-                      globals.selectedCourses.add(course);
+                      fetcher.selectedCourses.add(course);
                     } else {
-                      globals.selectedCourses.remove(course);
+                      fetcher.selectedCourses.remove(course);
                     }
                   });
                 }
@@ -240,5 +257,14 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
         );
       },
     );
+  }
+
+  Future<int> getUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? jwtToken = prefs.getString('jwtToken');
+    if (jwtToken != null) {
+      return fetcher.getClaims(jwtToken)['userId'] as int;
+    }
+    throw Exception('User ID not found.');
   }
 }

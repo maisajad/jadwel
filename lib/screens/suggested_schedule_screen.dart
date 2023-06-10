@@ -2,8 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:jadwel/components/info_container.dart';
-import 'package:jadwel/globals.dart' as globals;
-import '../components/course.dart';
+import 'package:jadwel/fetcher.dart' as fetcher;
+import '../components/DTO/course_dto.dart';
+import 'package:http/http.dart' as http;
 
 class SuggestedScheduleScreen extends StatefulWidget {
   const SuggestedScheduleScreen({Key? key}) : super(key: key);
@@ -17,8 +18,6 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Map;
-    globals.selectedDays = args['days'];
-    globals.selectedCourses = args['courses'];
 
     return Scaffold(
       appBar: AppBar(
@@ -29,9 +28,9 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
         ),
         centerTitle: true,
       ),
-      body: (!globals.isSuggested)
+      body: (!fetcher.isSuggested)
           ? const NoDataFound()
-          : (DateTime.now().compareTo(globals.deadLineDate) < 0)
+          : (DateTime.now().compareTo(fetcher.deadLineDate) < 0)
               ? Padding(
                   padding: const EdgeInsets.all(14.0),
                   child: ListView(
@@ -46,7 +45,7 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
                             borderColor: const Color.fromARGB(255, 171, 52, 43),
                             iconData: Icons.warning_outlined,
                             title:
-                                'Prior to submitting, please verify your\nschedule to ensure accuracy. It is important\nto note that once the modification deadline\nhas passed,the schedule cannot be modified.',
+                                'Prior to submitting, please verify your schedule to ensure accuracy. It is important to note that once the modification deadline has passed,the schedule cannot be modified.',
                             height: MediaQuery.of(context).size.height * 0.2,
                             width: MediaQuery.of(context).size.width * 1,
                           ),
@@ -55,7 +54,6 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
                           ),
                           const Text(
                             'Selected Days',
-                            // textAlign: TextAlign.start,
                             style: TextStyle(
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
@@ -110,8 +108,8 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
                                     Text('')
                                   ],
                                 ),
-                                ...globals.selectedCourses
-                                    .map((course) => buildRow(course))
+                                ...fetcher.studentSuggestedSchedule
+                                    .map((courseDto) => buildRow(courseDto))
                                     .toList(),
                               ],
                             ),
@@ -125,7 +123,7 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
                               width: MediaQuery.of(context).size.width * 0.30,
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  primary: const Color(0xFF3C698B),
+                                  backgroundColor: const Color(0xFF3C698B),
                                   elevation: 3,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
@@ -134,8 +132,8 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
                                 onPressed: () {
                                   Navigator.pushNamed(
                                       context, '/selectdepartment', arguments: {
-                                    'days': globals.selectedDays,
-                                    'courses': globals.selectedCourses
+                                    'days': fetcher.selectedDays,
+                                    'courses': fetcher.selectedCourses
                                   });
                                 },
                                 child: const Text(
@@ -167,7 +165,7 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
                             borderColor: const Color.fromARGB(255, 171, 52, 43),
                             iconData: Icons.warning_outlined,
                             title:
-                                'Modification of the schedule is no\nlonger possible, as the deadline for\nmodification has passed.',
+                                'Modification of the schedule is no longer possible, as the deadline for modification has passed.',
                             height: MediaQuery.of(context).size.height * 0.15,
                             width: MediaQuery.of(context).size.width * 1,
                           ),
@@ -176,7 +174,6 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
                           ),
                           const Text(
                             'Selected Days',
-                            // textAlign: TextAlign.start,
                             style: TextStyle(
                               fontSize: 25,
                               fontWeight: FontWeight.bold,
@@ -230,9 +227,9 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
                                   ],
                                 ),
                                 //buildRowWithoutRemove
-                                ...globals.selectedCourses
-                                    .map((course) =>
-                                        buildRowWithoutRemove(course))
+                                ...fetcher.studentSuggestedSchedule
+                                    .map((courseDto) =>
+                                        buildRowWithoutRemove(courseDto))
                                     .toList(),
                               ],
                             ),
@@ -245,13 +242,13 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
     );
   }
 
-  TableRow buildRow(Course course) {
+  TableRow buildRow(CourseDTO courseDto) {
     return TableRow(
       children: [
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            course.courseId.toString(),
+            courseDto.courseId.toString(),
             style: const TextStyle(
               fontSize: 18,
             ),
@@ -260,14 +257,14 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            course.name,
+            courseDto.courseName,
             style: const TextStyle(
               fontSize: 18,
             ),
           ),
         ),
         IconButton(
-          onPressed: () {
+          onPressed: () async {
             showDialog(
               context: context,
               builder: (BuildContext context) => SimpleDialog(
@@ -275,13 +272,22 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
                     const Text('Are you sure you want to remove this course?'),
                 children: [
                   SimpleDialogOption(
-                    onPressed: () {
-                      globals.selectedCourses.remove(course);
-                      course.value = false;
+                    onPressed: () async {
+                      var url = Uri.parse(
+                          'http://localhost:8080/api/suggestedStudentSchedule/${courseDto.studentScheduleId}');
+                      final response = await http.delete(url);
 
-                      globals.notSelectedCourses.add(course);
-
-                      setState(() {});
+                      if (response.statusCode == 204) {
+                        // If the server returns a 200 OK response, then remove the item from the list.
+                        setState(() {
+                          fetcher.studentSuggestedSchedule.remove(courseDto);
+                        });
+                      } else {
+                        // If the server did not return a 200 OK response, then throw an exception.
+                        throw Exception(
+                            'Failed to delete course with id ${courseDto.studentScheduleId}');
+                      }
+                      if (!mounted) return;
                       Navigator.pop(context);
                     },
                     child: const Text('Yes, I\'m sure!'),
@@ -305,13 +311,13 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
     );
   }
 
-  TableRow buildRowWithoutRemove(Course course) {
+  TableRow buildRowWithoutRemove(CourseDTO courseDto) {
     return TableRow(
       children: [
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            course.courseId.toString(),
+            courseDto.courseId.toString(),
             style: const TextStyle(
               fontSize: 18,
             ),
@@ -320,7 +326,7 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Text(
-            course.name,
+            courseDto.courseName,
             style: const TextStyle(
               fontSize: 18,
             ),
@@ -363,11 +369,13 @@ class DaysContainerWithoutEdit extends StatelessWidget {
             height: MediaQuery.of(context).size.height * 0.2,
             width: MediaQuery.of(context).size.width / 60,
           ),
-          Center(
-            child: Text(
-              globals.selectedDays,
-              style: const TextStyle(
-                fontSize: 20,
+          Expanded(
+            child: Center(
+              child: Text(
+                fetcher.selectedDays,
+                style: const TextStyle(
+                  fontSize: 20,
+                ),
               ),
             ),
           ),
@@ -441,11 +449,13 @@ class DaysContainer extends StatelessWidget {
             height: MediaQuery.of(context).size.height * 0.2,
             width: MediaQuery.of(context).size.width / 60,
           ),
-          Center(
-            child: Text(
-              globals.selectedDays,
-              style: const TextStyle(
-                fontSize: 20,
+          Expanded(
+            child: Center(
+              child: Text(
+                fetcher.selectedDays,
+                style: const TextStyle(
+                  fontSize: 20,
+                ),
               ),
             ),
           ),
@@ -462,8 +472,8 @@ class DaysContainer extends StatelessWidget {
                   context,
                   '/editdays',
                   arguments: {
-                    'days': globals.selectedDays,
-                    'courses': globals.selectedCourses
+                    'days': fetcher.selectedDays,
+                    'courses': fetcher.selectedCourses
                   },
                 );
               },

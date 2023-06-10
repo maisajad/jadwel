@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jadwel/components/custom_notification.dart';
-import 'package:jadwel/globals.dart' as globals;
+import 'package:jadwel/fetcher.dart' as fetcher;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({Key? key}) : super(key: key);
@@ -10,6 +11,16 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
+  late Future<List<CustomNotification>> _notificationsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _notificationsFuture = getUserId().then((userId) {
+      return fetcher.fetchNotifications(userId);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,12 +34,26 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: ListView(
-          children: [
-            ...globals.notifications
-                .map((notification) => buildNotification(notification))
-                .toList(),
-          ],
+        child: FutureBuilder<List<CustomNotification>>(
+          future: _notificationsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              return const Center(
+                child: Text('Failed to fetch notifications'),
+              );
+            } else {
+              final notifications = snapshot.data!;
+              return ListView(
+                children: notifications
+                    .map((notification) => buildNotification(notification))
+                    .toList(),
+              );
+            }
+          },
         ),
       ),
     );
@@ -67,10 +92,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   width: MediaQuery.of(context).size.width * 0.05,
                 ),
                 Expanded(
-                  child: Center(
-                    child: Text(
-                      notification.title,
-                      style: const TextStyle(fontSize: 18),
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.5,
+                    child: Center(
+                      child: Text(
+                        notification.title,
+                        style: const TextStyle(fontSize: 18),
+                        maxLines: 100,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                 ),
@@ -97,5 +127,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
       ),
     );
+  }
+
+  Future<int> getUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? jwtToken = prefs.getString('jwtToken');
+    int userId;
+    if (jwtToken != null) {
+      userId = fetcher.getClaims(jwtToken)['userId'];
+
+      return userId;
+    }
+
+    throw Exception('User ID not found');
   }
 }

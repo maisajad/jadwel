@@ -45,7 +45,7 @@ class CustomCard extends StatelessWidget {
                 height: height / 8,
               ),
               icon,
-              title,
+              FittedBox(child: title),
             ],
           ),
         ),

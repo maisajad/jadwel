@@ -1,6 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import '../components/custom_card.dart';
-import 'package:jadwel/globals.dart' as globals;
+import 'package:jadwel/fetcher.dart' as fetcher;
 
 class ScheduleOptionsScreen extends StatelessWidget {
   const ScheduleOptionsScreen({Key? key}) : super(key: key);
@@ -44,8 +46,11 @@ class ScheduleOptionsScreen extends StatelessWidget {
                 Icons.playlist_add,
                 size: 50,
               ),
-              onTap: (() {
-                if (globals.isSuggested) {
+              onTap: (() async {
+                await fetcher.fetchDateData();
+                await fetcher.fetchSuggestedStatus();
+                if (fetcher.isSuggested ||
+                    DateTime.now().compareTo(fetcher.deadLineDate) > 0) {
                   showDialog(
                       context: context,
                       builder: (BuildContext context) => SimpleDialog(
@@ -80,10 +85,13 @@ class ScheduleOptionsScreen extends StatelessWidget {
                 Icons.grid_on,
                 size: 50,
               ),
-              onTap: () {
+              onTap: () async {
+                await fetcher.fetchSuggestedStatus();
+                await fetcher.fetchDateData();
+                await fetcher.fetchStudentSchedule();
                 Navigator.pushNamed(context, '/suggestedschedule', arguments: {
-                  'days': globals.selectedDays,
-                  'courses': globals.selectedCourses
+                  'days': fetcher.selectedDays,
+                  'courses': fetcher.selectedCourses
                 });
               },
             ),

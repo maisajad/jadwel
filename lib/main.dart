@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:jadwel/screens/login_screen.dart';
 import 'package:jadwel/screens/main_screen.dart';
 import 'package:jadwel/screens/notifications_screen.dart';
@@ -15,9 +14,6 @@ import 'screens/notifcation_screen.dart';
 import 'screens/suggested_schedule_screen.dart';
 
 void main() {
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  FlutterNativeSplash.remove();
   runApp(const MyApp());
 }
 
@@ -29,24 +25,25 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Jadwel Student App',
       theme: ThemeData(
-        backgroundColor: const Color(0xFFF4F4F4),
         unselectedWidgetColor: const Color(0xFF3C698B),
         primaryColor: const Color(0xFF3C698B),
         hoverColor: const Color(0xFF244863),
         focusColor: const Color(0xFF244863),
         scaffoldBackgroundColor: const Color(0xFFF4F4F4),
         textTheme: const TextTheme(
-            bodyText2: TextStyle(
-          color: Color(0xFF323232),
-          fontFamily: 'NotoSansLao',
-        )),
+          bodyMedium: TextStyle(
+            color: Color(0xFF323232),
+            fontFamily: 'NotoSansLao',
+          ),
+        ),
         radioTheme: RadioThemeData(
           fillColor: MaterialStateColor.resolveWith(
             (states) => const Color(0xFF244863),
           ),
         ),
         colorScheme: ColorScheme.fromSwatch()
-            .copyWith(secondary: const Color(0xFF3C698B)),
+            .copyWith(secondary: const Color(0xFF3C698B))
+            .copyWith(background: const Color(0xFFF4F4F4)),
       ),
       initialRoute: '/',
       routes: {

@@ -1,6 +1,9 @@
+// ignore_for_file: use_build_context_synchronously, duplicate_ignore
+
 import 'package:flutter/material.dart';
 import 'package:jadwel/components/navigation_bar.dart';
 import '../components/custom_card.dart';
+import 'package:jadwel/fetcher.dart' as fetcher;
 
 class MainScreen extends StatelessWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -97,8 +100,30 @@ class MainScreen extends StatelessWidget {
                 Icons.grid_on_sharp,
                 size: 50,
               ),
-              onTap: () {
-                Navigator.pushNamed(context, '/scheduleoptions');
+              onTap: () async {
+                await fetcher.fetchSuggestedStatus();
+                await fetcher.fetchDateData();
+                // ignore: duplicate_ignore
+                if (DateTime.now().compareTo(fetcher.startDate) < 0) {
+                  // ignore: use_build_context_synchronously
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) => SimpleDialog(
+                      title: const Text(
+                          'You can\'t suggest a schedule right now.'),
+                      children: [
+                        SimpleDialogOption(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text('Close'),
+                        ),
+                      ],
+                    ),
+                  );
+                } else {
+                  Navigator.pushNamed(context, '/scheduleoptions');
+                }
               },
             ),
           ],

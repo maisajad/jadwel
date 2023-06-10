@@ -2,10 +2,11 @@
 
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jadwel/components/college.dart';
 import 'package:jadwel/components/department.dart';
-import 'package:jadwel/globals.dart' as globals;
+import 'package:jadwel/fetcher.dart' as fetcher;
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -24,16 +25,16 @@ Future<void> sendCourseData(Course course) async {
   final url = Uri.parse('http://localhost:8080/api/suggestedStudentSchedule');
   final response = await http.post(
     url,
-    headers: {
-      'Content-Type': 'application/json'
-    }, // Set the content type header
+    headers: {'Content-Type': 'application/json'},
     body: json.encode({
-      'days': globals.selectedDays,
+      'days': fetcher.selectedDays,
       'user_id': await getUserIdFromSession(),
       'course_id': course.courseId.toString(),
     }),
   );
-
+  if (kDebugMode) {
+    print('sendCourseData ${course.courseId}');
+  }
   if (response.statusCode == 200) {
     log('200');
   } else {
@@ -41,10 +42,17 @@ Future<void> sendCourseData(Course course) async {
   }
 }
 
-Future<String?> getUserIdFromSession() async {
+Future<int?> getUserIdFromSession() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? userId = prefs.getString('user_id');
-  log(userId.toString());
+  String? jwtToken = prefs.getString('jwtToken');
+  // ignore: prefer_typing_uninitialized_variables
+  var userId;
+  if (jwtToken != null) {
+    userId = fetcher.getClaims(jwtToken)['userId'];
+    if (kDebugMode) {
+      print('JWT NOT NULL $userId ');
+    }
+  }
 
   return userId;
 }
@@ -55,8 +63,8 @@ class _SelectedCoursesScreenState extends State<SelectedCoursesScreen> {
     final args = ModalRoute.of(context)!.settings.arguments as Map;
     final Department selectedDepartment = args['department'];
     final College selectedCollege = args['college'];
-    globals.selectedDays = args['days'];
-    globals.selectedCourses = args['courses'];
+    fetcher.selectedDays = args['days'];
+    fetcher.selectedCourses = args['courses'];
 
     return WillPopScope(
       onWillPop: () async => false,
@@ -125,7 +133,7 @@ class _SelectedCoursesScreenState extends State<SelectedCoursesScreen> {
                             Text('')
                           ],
                         ),
-                        ...globals.selectedCourses
+                        ...fetcher.selectedCourses
                             .map((course) => buildRow(course))
                             .toList(),
                       ],
@@ -140,19 +148,20 @@ class _SelectedCoursesScreenState extends State<SelectedCoursesScreen> {
               width: MediaQuery.of(context).size.width * 0.30,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  primary: const Color(0xFF3C698B),
+                  backgroundColor: const Color(0xFF3C698B),
                   elevation: 3,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 onPressed: () async {
-                  if (globals.selectedCourses.isNotEmpty) {
-                    for (final course in globals.selectedCourses) {
+                  if (fetcher.selectedCourses.isNotEmpty) {
+                    for (final course in fetcher.selectedCourses) {
                       await sendCourseData(course);
                     }
+                    if (!mounted) return;
                     Navigator.pushNamed(context, '/mainscreen');
-                    globals.isSuggested = true;
+                    fetcher.isSuggested = true;
                     showDialog(
                       context: context,
                       builder: (BuildContext context) => AlertDialog(
@@ -170,7 +179,7 @@ class _SelectedCoursesScreenState extends State<SelectedCoursesScreen> {
                               Navigator.pop(context);
                             },
                             style: TextButton.styleFrom(
-                              primary: Colors.green,
+                              foregroundColor: Colors.green,
                             ),
                             child: const Text('Great'),
                           ),
@@ -188,8 +197,8 @@ class _SelectedCoursesScreenState extends State<SelectedCoursesScreen> {
                             onPressed: () {
                               Navigator.pushNamed(context, '/selectdepartment',
                                   arguments: {
-                                    'days': globals.selectedDays,
-                                    'courses': globals.selectedCourses
+                                    'days': fetcher.selectedDays,
+                                    'courses': fetcher.selectedCourses
                                   });
                             },
                             child: const Text('Select Courses'),
@@ -243,9 +252,9 @@ class _SelectedCoursesScreenState extends State<SelectedCoursesScreen> {
                 children: [
                   SimpleDialogOption(
                     onPressed: () {
-                      globals.selectedCourses.remove(course);
+                      fetcher.selectedCourses.remove(course);
                       course.value = false;
-                      globals.notSelectedCourses.add(course);
+                      fetcher.notSelectedCourses.add(course);
 
                       setState(() {});
 

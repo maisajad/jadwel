@@ -1,15 +1,12 @@
-import 'dart:developer';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:jaguar_jwt/jaguar_jwt.dart';
-import 'dart:math';
+import 'package:jadwel/fetcher.dart' as fetcher;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -18,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String _studentID = '';
   String _password = '';
   bool _isObscure = true;
+  bool _isLoading = false;
 
   void _toggle() {
     setState(() {
@@ -151,69 +149,101 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(
                     height: MediaQuery.of(context).size.height * 0.03,
                   ),
-                  SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.07,
-                      width: MediaQuery.of(context).size.width * 0.635,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          var url = Uri.parse(
-                              'http://localhost:8080/api/authenticate');
+                  _isLoading
+                      ? const CircularProgressIndicator() // Show circular indicator if _isLoading is true
+                      : SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.07,
+                          width: MediaQuery.of(context).size.width * 0.635,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              setState(() {
+                                _isLoading =
+                                    true; // Set _isLoading to true when button is pressed
+                              });
 
-                          var response = await http.post(
-                            url,
-                            headers: <String, String>{
-                              'Content-Type': 'application/json; charset=UTF-8',
-                            },
-                            body: jsonEncode(<String, String>{
-                              'user_id': _studentID,
-                              'password': _password,
-                            }),
-                          );
+                              var url = Uri.parse(
+                                  'http://localhost:8080/api/authenticate');
 
-                          if (response.statusCode == 200) {
-                            SharedPreferences prefs =
-                                await SharedPreferences.getInstance();
+                              var response = await http.post(
+                                url,
+                                headers: <String, String>{
+                                  'Content-Type':
+                                      'application/json; charset=UTF-8',
+                                },
+                                body: jsonEncode(<String, String>{
+                                  'user_id': _studentID,
+                                  'password': _password,
+                                }),
+                              );
 
-                            final String token = response.body;
-                            final String secret =
-                                'DeiaaDeiaaDeiaaDeiaaDeiaaDeiaaDeiaaDeiaa';
+                              if (response.statusCode == 200) {
+                                SharedPreferences prefs =
+                                    await SharedPreferences.getInstance();
 
-                            final decClaimSet =
-                                verifyJwtHS256Signature(token, secret);
-                            print('Decoded JWT: $decClaimSet');
-
-                            await prefs.setString('jwt_token', response.body);
-                            //TODO
-                            await prefs.setString('user_id', _studentID);
-
-                            print(response.body);
-                            Navigator.pushNamed(context, '/mainscreen');
-                          } else {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) => SimpleDialog(
-                                title: const Text(
-                                    'Student ID or Password are icorrect'),
-                                children: [
-                                  SimpleDialogOption(
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                    },
-                                    child: const Text('Close'),
+                                final authority = fetcher
+                                    .getClaims(response.body)['authority'];
+                                if (kDebugMode) {
+                                  print("mmmmmmmmmmmmaisa$authority");
+                                }
+                                if (authority.toString() == 'Student') {
+                                  await prefs.setString(
+                                      'jwtToken', response.body);
+                                  if (kDebugMode) {
+                                    print(response.body);
+                                  }
+                                  if (!mounted) return;
+                                  Navigator.pushNamed(context, '/mainscreen');
+                                } else {
+                                  if (!mounted) return;
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) =>
+                                        SimpleDialog(
+                                      title:
+                                          const Text('You are not authorized'),
+                                      children: [
+                                        SimpleDialogOption(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: const Text('Close'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                              } else {
+                                if (!mounted) return;
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) =>
+                                      SimpleDialog(
+                                    title: const Text(
+                                        'Student ID or Password are icorrect'),
+                                    children: [
+                                      SimpleDialogOption(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text('Close'),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          primary: const Color(0xFF244863),
+                                );
+                              }
+                              setState(() {
+                                _isLoading = false;
+                              });
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF244863),
+                            ),
+                            child: const Text(
+                              'Login',
+                              style: TextStyle(fontSize: 18),
+                            ),
+                          ),
                         ),
-                        child: const Text(
-                          'Login',
-                          style: TextStyle(fontSize: 18),
-                        ),
-                      )),
                 ],
               ),
             ),
