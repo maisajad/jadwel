@@ -38,12 +38,12 @@ class _SelectDaysScreenState extends State<SelectDaysScreen> {
             RadioListTile<String>(
               contentPadding: const EdgeInsets.only(left: 10),
               title: const Text(
-                'Sunday-Tuesday-Thursday',
+                'Sunday - Tuesday - Thursday',
                 style: TextStyle(
                   fontSize: 20,
                 ),
               ),
-              value: 'Sunday-Tuesday-Thursday',
+              value: 'Sunday - Tuesday - Thursday',
               groupValue: fetcher.selectedDays,
               onChanged: (value) {
                 setState(() {
@@ -54,12 +54,12 @@ class _SelectDaysScreenState extends State<SelectDaysScreen> {
             RadioListTile<String>(
               contentPadding: const EdgeInsets.only(left: 10),
               title: const Text(
-                'Monday-Wednesday',
+                'Monday - Wednesday',
                 style: TextStyle(
                   fontSize: 20,
                 ),
               ),
-              value: 'Monday-Wednesday',
+              value: 'Monday - Wednesday',
               groupValue: fetcher.selectedDays,
               onChanged: (value) {
                 setState(() {
@@ -75,7 +75,7 @@ class _SelectDaysScreenState extends State<SelectDaysScreen> {
                   fontSize: 20,
                 ),
               ),
-              value: 'All days',
+              value: 'Sunday - Tuesday - Thursday, Monday - Wednesday',
               groupValue: fetcher.selectedDays,
               onChanged: (value) {
                 setState(() {

@@ -34,7 +34,16 @@ List<CustomNotification> notifications = [
 ];
 
 Future<void> fetchDateData() async {
-  final response = await http.get(Uri.parse('http://localhost:8080/api/date'));
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? jwtToken = prefs.getString('jwtToken');
+  // ignore: prefer_typing_uninitialized_variables
+  var departmentId;
+  if (jwtToken != null) {
+    departmentId = getClaims(jwtToken)['departmentId'];
+  }
+
+  final response =
+      await http.get(Uri.parse('http://localhost:8080/api/date/$departmentId'));
 
   if (response.statusCode == 200) {
     var dateData = jsonDecode(response.body);
