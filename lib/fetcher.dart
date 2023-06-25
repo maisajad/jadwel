@@ -20,18 +20,18 @@ String selectedDays = '';
 DateTime deadLineDate = DateTime.now();
 DateTime startDate = DateTime.now();
 
-List<CustomNotification> notifications = [
-  CustomNotification(
-    title: 'Instrutor Changed',
-    message: 'Instructor for Operating systems have been chaged.',
-    date: DateTime.now(),
-  ),
-  CustomNotification(
-    title: 'Instrutor Changed',
-    message: 'Instructor for Java Programming have been chaged.',
-    date: DateTime.now(),
-  ),
-];
+resetData() {
+  selectedCourses = [];
+  studentSuggestedSchedule = [];
+  notSelectedCourses = [];
+
+  isSuggested = false;
+
+  selectedDays = '';
+
+  deadLineDate = DateTime.now();
+  startDate = DateTime.now();
+}
 
 Future<void> fetchDateData() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -42,8 +42,8 @@ Future<void> fetchDateData() async {
     departmentId = getClaims(jwtToken)['departmentId'];
   }
 
-  final response =
-      await http.get(Uri.parse('http://localhost:8080/api/date/$departmentId'));
+  final response = await http.get(Uri.parse(
+      'https://statistics-scheduling-system-api-production.up.railway.app/api/date/$departmentId'));
 
   if (response.statusCode == 200) {
     var dateData = jsonDecode(response.body);
@@ -65,8 +65,8 @@ getClaims(String token) {
 }
 
 Future<List<CustomNotification>> fetchNotifications(int userId) async {
-  final response = await http
-      .get(Uri.parse('http://localhost:8080/api/notifyMessage/$userId'));
+  final response = await http.get(Uri.parse(
+      'https://statistics-scheduling-system-api-production.up.railway.app/api/notifyMessage/$userId'));
 
   if (response.statusCode == 200) {
     final List<dynamic> jsonResponse = jsonDecode(response.body);
@@ -93,7 +93,7 @@ Future<void> fetchSuggestedStatus() async {
   }
 
   final response = await http.get(Uri.parse(
-      'http://localhost:8080/api/suggestedStudentSchedule/$userId/exists'));
+      'https://statistics-scheduling-system-api-production.up.railway.app/api/suggestedStudentSchedule/$userId/exists'));
 
   if (response.statusCode == 200) {
     isSuggested = jsonDecode(response.body);
@@ -110,8 +110,8 @@ fetchStudentSchedule() async {
   if (jwtToken != null) {
     userId = getClaims(jwtToken)['userId'];
   }
-  final response = await http.get(
-      Uri.parse('http://localhost:8080/api/suggestedStudentSchedule/$userId'));
+  final response = await http.get(Uri.parse(
+      'https://statistics-scheduling-system-api-production.up.railway.app/api/suggestedStudentSchedule/$userId'));
 
   if (response.statusCode == 200) {
     List jsonResponse = jsonDecode(response.body);

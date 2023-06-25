@@ -274,7 +274,7 @@ class _SuggestedScheduleScreenState extends State<SuggestedScheduleScreen> {
                   SimpleDialogOption(
                     onPressed: () async {
                       var url = Uri.parse(
-                          'http://localhost:8080/api/suggestedStudentSchedule/${courseDto.studentScheduleId}');
+                          'https://statistics-scheduling-system-api-production.up.railway.app/api/suggestedStudentSchedule/${courseDto.studentScheduleId}');
                       final response = await http.delete(url);
 
                       if (response.statusCode == 204) {

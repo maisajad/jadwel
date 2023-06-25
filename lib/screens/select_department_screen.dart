@@ -39,8 +39,8 @@ class _SelectDepartmentScreenState extends State<SelectDepartmentScreen> {
   }
 
   Future<List<College>> fetchColleges() async {
-    final response =
-        await http.get(Uri.parse('http://localhost:8080/api/collages'));
+    final response = await http.get(Uri.parse(
+        'https://statistics-scheduling-system-api-production.up.railway.app/api/collages'));
 
     if (response.statusCode == 200) {
       final List<dynamic> json = jsonDecode(response.body);
@@ -69,8 +69,8 @@ class _SelectDepartmentScreenState extends State<SelectDepartmentScreen> {
   }
 
   Future<List<Department>> fetchDepartments(int collegeId) async {
-    final response = await http
-        .get(Uri.parse('http://localhost:8080/api/departments/$collegeId'));
+    final response = await http.get(Uri.parse(
+        'https://statistics-scheduling-system-api-production.up.railway.app/api/departments/$collegeId'));
 
     if (response.statusCode == 200) {
       final List<dynamic> json = jsonDecode(response.body);

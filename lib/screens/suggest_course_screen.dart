@@ -181,7 +181,8 @@ class _SuggestCourseScreenState extends State<SuggestCourseScreen> {
     int userId;
     if (jwtToken != null) {
       userId = fetcher.getClaims(jwtToken)['userId'];
-      var url = Uri.parse('http://localhost:8080/api/suggestedCourse');
+      var url = Uri.parse(
+          'https://statistics-scheduling-system-api-production.up.railway.app/api/suggestedCourse');
 
       var body = json.encode({
         "userId": userId,

@@ -22,7 +22,8 @@ class SelectedCoursesScreen extends StatefulWidget {
 }
 
 Future<void> sendCourseData(Course course) async {
-  final url = Uri.parse('http://localhost:8080/api/suggestedStudentSchedule');
+  final url = Uri.parse(
+      'https://statistics-scheduling-system-api-production.up.railway.app/api/suggestedStudentSchedule');
   final response = await http.post(
     url,
     headers: {'Content-Type': 'application/json'},

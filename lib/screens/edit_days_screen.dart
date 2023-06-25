@@ -148,7 +148,7 @@ class _EditDaysScreenState extends State<EditDaysScreen> {
     if (jwtToken != null) {
       userId = fetcher.getClaims(jwtToken)['userId'];
       var url = Uri.parse(
-          'http://localhost:8080/api/suggestedStudentSchedule/$userId');
+          'https://statistics-scheduling-system-api-production.up.railway.app/api/suggestedStudentSchedule/$userId');
       var body = json.encode({"days": fetcher.selectedDays});
 
       var response = await http.put(

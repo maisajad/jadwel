@@ -23,8 +23,8 @@ class _SelectCoursesScreenState extends State<SelectCoursesScreen> {
 
   Future<void> _fetchCourses(int departmentId, int userId) async {
     try {
-      final response = await http.get(
-          Uri.parse('http://localhost:8080/api/courses/$userId/$departmentId'));
+      final response = await http.get(Uri.parse(
+          'https://statistics-scheduling-system-api-production.up.railway.app/api/courses/$userId/$departmentId'));
       if (response.statusCode == 200) {
         final List<dynamic> coursesData = json.decode(response.body);
         _courses = coursesData

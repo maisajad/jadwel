@@ -1,15 +1,22 @@
-// ignore_for_file: use_build_context_synchronously, duplicate_ignore
-
 import 'package:flutter/material.dart';
 import 'package:jadwel/components/navigation_bar.dart';
-import '../components/custom_card.dart';
+import 'package:jadwel/components/custom_card.dart';
 import 'package:jadwel/fetcher.dart' as fetcher;
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
+  _MainScreenState createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  bool isLoading = false;
+
+  @override
   Widget build(BuildContext context) {
+    fetcher.resetData();
     return Scaffold(
       drawer: const NavBar(),
       appBar: AppBar(
@@ -31,103 +38,130 @@ class MainScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: GridView.count(
-          childAspectRatio: (MediaQuery.of(context).size.width * 0.45) /
-              (MediaQuery.of(context).size.height * 0.20),
+          childAspectRatio: getCardAspectRatio(context),
           crossAxisCount: 2,
-          mainAxisSpacing: MediaQuery.of(context).size.width * 0.05,
-          crossAxisSpacing: MediaQuery.of(context).size.height * 0.01,
+          mainAxisSpacing: getMainAxisSpacing(context),
+          crossAxisSpacing: getCrossAxisSpacing(context),
           children: [
-            CustomCard(
-              width: MediaQuery.of(context).size.width * 0.45,
-              height: MediaQuery.of(context).size.height * 0.20,
-              title: const Text(
-                'Finance',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              icon: const Icon(
-                Icons.attach_money,
-                size: 50,
-              ),
+            buildCustomCard(
+              context,
+              title: 'Finance',
+              icon: Icons.attach_money,
               onTap: () {},
             ),
-            CustomCard(
-              width: MediaQuery.of(context).size.width * 0.45,
-              height: MediaQuery.of(context).size.height * 0.20,
-              title: const Text(
-                'Registration',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              icon: const Icon(
-                Icons.dvr_sharp,
-                size: 50,
-              ),
+            buildCustomCard(
+              context,
+              title: 'Registration',
+              icon: Icons.dvr_sharp,
               onTap: () {},
             ),
-            CustomCard(
-              width: MediaQuery.of(context).size.width * 0.45,
-              height: MediaQuery.of(context).size.height * 0.20,
-              title: const Text(
-                'Request Documents',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              icon: const Icon(
-                Icons.insert_drive_file_outlined,
-                size: 50,
-              ),
+            buildCustomCard(
+              context,
+              title: 'Request Documents',
+              icon: Icons.insert_drive_file_outlined,
               onTap: () {},
             ),
-            CustomCard(
-              width: MediaQuery.of(context).size.width * 0.45,
-              height: MediaQuery.of(context).size.height * 0.20,
-              title: const Text(
-                'Library',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              icon: const Icon(
-                Icons.local_library_outlined,
-                size: 50,
-              ),
+            buildCustomCard(
+              context,
+              title: 'Library',
+              icon: Icons.local_library_outlined,
               onTap: () {},
             ),
-            CustomCard(
-              width: MediaQuery.of(context).size.width * 0.45,
-              height: MediaQuery.of(context).size.height * 0.20,
-              title: const Text(
-                'Suggest Schedule',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              icon: const Icon(
-                Icons.grid_on_sharp,
-                size: 50,
-              ),
+            buildCustomCard(
+              context,
+              title: 'Suggest Schedule',
+              icon: Icons.grid_on_sharp,
+              isLoading: isLoading,
               onTap: () async {
+                setState(() {
+                  isLoading = true;
+                });
+
                 await fetcher.fetchSuggestedStatus();
                 await fetcher.fetchDateData();
-                // ignore: duplicate_ignore
+
                 if (DateTime.now().compareTo(fetcher.startDate) < 0) {
-                  // ignore: use_build_context_synchronously
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) => SimpleDialog(
-                      title: const Text(
-                          'You can\'t suggest a schedule right now.'),
-                      children: [
-                        SimpleDialogOption(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text('Close'),
-                        ),
-                      ],
-                    ),
-                  );
+                  showSuggestionErrorDialog(context);
                 } else {
                   Navigator.pushNamed(context, '/scheduleoptions');
                 }
+
+                setState(() {
+                  isLoading = false;
+                });
               },
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  double getCardAspectRatio(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    return (screenWidth * 0.45) / (screenHeight * 0.20);
+  }
+
+  double getMainAxisSpacing(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    return screenWidth * 0.05;
+  }
+
+  double getCrossAxisSpacing(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    return screenHeight * 0.01;
+  }
+
+  Widget buildCustomCard(BuildContext context,
+      {required String title,
+      required IconData icon,
+      required onTap,
+      bool isLoading = false}) {
+    return GestureDetector(
+      onTap: isLoading ? null : onTap,
+      child: Stack(
+        children: [
+          CustomCard(
+            width: MediaQuery.of(context).size.width * 0.45,
+            height: MediaQuery.of(context).size.height * 0.20,
+            title: Text(
+              title,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            icon: Icon(
+              icon,
+              size: 50,
+            ),
+            onTap: onTap,
+          ),
+          if (isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void showSuggestionErrorDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => SimpleDialog(
+        title: const Text('You can\'t suggest a schedule right now.'),
+        children: [
+          SimpleDialogOption(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('Close'),
+          ),
+        ],
       ),
     );
   }
